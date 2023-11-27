@@ -1,0 +1,113 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
+
+/* dark-mode css */
+body.dark-mode {
+    background-color: #1a1a1a;
+    color: #ffffff;
+}
+
+body.dark-mode #txt {
+    background-color: #1a1a1a;
+    color: #ffffff;
+    border-bottom: 1px solid #ffffff;
+}
+
+body.dark-mode #txt::placeholder{
+    color: #ffffff;
+}
+
+body.dark-mode #txt:focus{
+    border-bottom: 3px solid #ffffff;
+}
+
+/* reset css */
+*{
+    border: 0;
+    margin: 0;
+    box-sizing: border-box;
+}
+
+/* light-mode css */
+body{
+    transition: all 0.5s ease-in-out;
+    font-family: 'Inter', sans-serif;
+}
+
+#container{
+    display: flex;
+}
+
+#center{
+    width: 90vw;
+    height: 100vh;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+#borda{
+    width: 5vw;
+    height: 100vh;
+    background-color: #DD203C;
+}
+
+#form{
+    display: flex;
+    margin: 15vh 0;
+}
+
+#logo-jarvis{
+    width: 160px;
+    height: 183px;
+}
+
+#logo-senai{
+    width: 128px;
+    height: 29px;
+}
+
+h1{
+    font-weight: 700;
+    font-size: 96px;
+}
+
+#txt{
+    font-weight: 400;
+    font-size: 24px;
+    width: 867px;
+    border: none;
+    border-bottom: 1px solid #272727;
+    outline: none;
+    transition: all 0.5s ease-in-out;
+}
+
+#txt:focus{
+    border-bottom: 3px solid #272727;
+}
+
+#txt::placeholder{
+    color: #272727;
+}
+
+.btn{
+    width: 70px;
+    height: 70px;
+    border: none;
+    border-radius: 50%;
+    background-color: #DD203C;
+    color: #FFFFFF;
+}
+
+.icon{
+    font-size: 30px;
+    font-style: normal;
+    font-weight: 900;
+    line-height: normal;
+}
+
+.dark-mode-switch{
+    width: 5vw;
+    height: 100vh;
+}
