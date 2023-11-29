@@ -98,7 +98,6 @@ h1{
     border-radius: 50%;
     background-color: #DD203C;
     color: #FFFFFF;
-    margin: 10px;
 }
 
 .btn-sm{
@@ -116,4 +115,5 @@ h1{
 .dark-mode-switch{
     width: 5vw;
     height: 100vh;
+    margin: 2%
 }

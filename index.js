@@ -1,6 +1,31 @@
 const darkModeSwitch = document.getElementById('darkModeSwitch');
 const body = document.body;
 let dark = false;
+const resultElement = document.getElementById('txt');
+
+// Resolvemos o problema de não poder iniciar a captura de voz automaticamente
+let h1 = document.querySelector('h1');
+h1.click();
+
+const GetKey = (service, callback) => {
+    fetch('keys.json')
+    .then(response => response.json())
+    .then(data => {
+        callback(data[service]);
+    })
+    .catch(error => console.error(error));
+};
+
+let openAIKey;
+let microsoftKey;
+
+GetKey('openai', (key) => {
+    openAIKey = key;
+});
+
+GetKey('microsoft', (key) => {
+    microsoftKey = key;
+});
 
 // Check user's preference from localStorage
 if (localStorage.getItem('darkMode') === 'enabled') {
@@ -9,9 +34,12 @@ if (localStorage.getItem('darkMode') === 'enabled') {
     disableDarkMode()
 }
 
-
 // Toggle dark mode on switch change
 darkModeSwitch.addEventListener('click', () => {
+    modeSwitch();
+});
+
+const modeSwitch = () => {
     if (!dark) {
         enableDarkMode();
         dark = true;
@@ -19,7 +47,7 @@ darkModeSwitch.addEventListener('click', () => {
         disableDarkMode();
         dark = false;
     }
-});
+}
 
 // Functions to enable/disable dark mode
 function enableDarkMode() {
@@ -37,7 +65,7 @@ function disableDarkMode() {
 const consultarOpenAI = async(pergunta) => {
     var myHeaders = new Headers();
     myHeaders.append("Content-Type", "application/json");
-    myHeaders.append("Authorization", "Bearer");
+    myHeaders.append("Authorization", "Bearer "+openAIKey);
     myHeaders.append("Cookie", "__cf_bm=.4iV5_ydt80w1MWlcgQTJ.dwPyfpBaEwDoSAZpiD1ek-1701178880-0-AbQ0miXZ5HFntdeU3aWLnAOZ2cSKT0tejoOOsVRCPRg/GnqHB/12KfsUlCD0LT1yoI0Ik/PKUWbSV9/CDzLNGwo=; _cfuvid=4z.is0uhNGJnfeVI4l1GfIQZgjjdqsIJQyThZHoDrNQ-1701178880316-0-604800000");
 
     var raw = JSON.stringify({
@@ -70,57 +98,73 @@ const consultarOpenAI = async(pergunta) => {
 
 const capturarVoz = () => {
     var startButton = document.getElementById('capture');
-    var resultElement = document.getElementById('txt');
-
     var recognition = new webkitSpeechRecognition();
 
     recognition.lang = window.navigator.language;
-    recognition.interimResults = true;
+    recognition.continuous = true;
+    recognition.interimResults = false;
 
-    var isListening = false;
-
-    //startButton.addEventListener('click', () => {
-        startButton.innerHTML = '<i class="fas fa-microphone icon"></i>';
-        //isListening = true;
-        recognition.start();
-    //});
-    
+    startButton.innerHTML = '<i class="fas fa-microphone icon"></i>';
+    recognition.start();
 
     recognition.addEventListener('result', (event) => {
-        //if (isListening) {
-            let result = event.results[event.results.length - 1][0].transcript;        
-            resultElement.value = result;
 
-            if (result.toLowerCase().includes('teste')) {
-                //recognition.stop();
-                //recognition.start();
-                result = "";
-                resultElement.value = result;
-                setTimeout(() => {
-                    //recognition.start();
-                    result = event.results[event.results.length - 1][0].transcript;        
-                    resultElement.value = result;
-                    //isListening = false; // Stop listening after recognizing "Jarvis"
-                    startButton.innerHTML = '<i class="fas fa-microphone-slash icon"></i>';
-                    //const textoCapturado = resultElement.value;
-                  }, 100);
-                //consultarOpenAI(textoCapturado);
-            //}
+        const result = event.results[event.results.length - 1][0].transcript;        
+
+        if (result.toLowerCase().includes('jarvis')) {
+            trocarIcone('<i class="fas fa-microphone-slash icon"></i>');
+            // Checa se é o comando de trocar tema antes de pesquisar
+            if (result.toLowerCase().includes('trocar tema')) {
+                modeSwitch();
+                recognition.stop();
+                restart(recognition);
+                return;
+            }
+
+            // Comece a salvar a pergunta quando "Jarvis" é detectado
+            let array_pergunta = result.toLowerCase().split(/(jarvis)/);
+
+            // Remova o que vem antes de "Jarvis"
+            array_pergunta.shift();
+            
+            // Remover o primeiro "Jarvis" do array
+            array_pergunta.shift();
+
+            // Unir o restante do array em uma string
+            array_pergunta = array_pergunta.join('');
+
+            // Escrevemos no input a pergunta
+            resultElement.value = array_pergunta;
+
+            // Pare a captura de voz
+            recognition.stop();
+
+            // Consulte a API do OpenAI
+            consultarOpenAI(array_pergunta);
+        
+            restart(recognition);
+            
         }
-    });
+    }); 
+}
 
-    recognition.addEventListener('end', () => {
-        //if (!isListening) {
-            const textoCapturado = resultElement.value;
-            startButton.innerHTML = '<i class="fas fa-microphone icon"></i>';
-            //consultarOpenAI(textoCapturado);
-        //}
-    });    
+const restart = (recognition) => {
+    // Depois de 1 segundo, reinicie a captura de voz
+    setTimeout(() => {
+        recognition.start();
+        trocarIcone('<i class="fas fa-microphone icon"></i>');
+        resultElement.value = "";
+    }, 1000);
+}
+
+const trocarIcone = (icone) => {
+    var startButton = document.getElementById('capture');
+    startButton.innerHTML = icone;
 }
 
 const reproduzirVoz = (resposta) => {
     var myHeaders = new Headers();
-    myHeaders.append("Ocp-Apim-Subscription-Key", "");
+    myHeaders.append("Ocp-Apim-Subscription-Key", microsoftKey);
     myHeaders.append("Content-Type", "application/ssml+xml");
     myHeaders.append("X-Microsoft-OutputFormat", "audio-16khz-128kbitrate-mono-mp3");
     myHeaders.append("User-Agent", "curl");
